@@ -27,18 +27,17 @@ class Variable(Operation):
         return kwargs[self.name]
 
     def derivative(self, variable_name: str) -> Operation:
-        return Constant(value=1) if self.name==variable_name else Constant(value=0)
-
+        return Constant(value=1) if self.name == variable_name else Constant(value=0)
 
 
 class Constant(Operation):
     def __init__(self, value: float) -> None:
         super().__init__(name=str(value))
-        self.value= value
-    
+        self.value = value
+
     def evaluate(self, **kwargs) -> float:
         return self.value
-    
+
     def derivative(self, _) -> Operation:
         return Constant(value=0)
 
