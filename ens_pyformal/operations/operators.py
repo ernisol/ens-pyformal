@@ -2,7 +2,7 @@
 
 from typing import List
 
-from ens_pyformal.operations.generic import InvalidDefinitionError, Operation, Constant
+from ens_pyformal.operations.generic import Constant, InvalidDefinitionError, Operation
 
 
 class Sum(Operation):
@@ -11,9 +11,13 @@ class Sum(Operation):
 
     def evaluate(self, **kwargs) -> float:
         return sum([child.evaluate(**kwargs) for child in self.children])
-    
+
     def derivative(self, variable_name: str) -> Operation:
-        return Sum(children=[child.derivative(variable_name=variable_name) for child in self.children])
+        return Sum(
+            children=[
+                child.derivative(variable_name=variable_name) for child in self.children
+            ]
+        )
 
 
 class Multiply(Operation):
@@ -32,8 +36,12 @@ class Multiply(Operation):
             terms.append(
                 Multiply(
                     children=[
-                        child.derivative(variable_name), 
-                        *[other_child for j, other_child in enumerate(self.children) if i!=j]
+                        child.derivative(variable_name),
+                        *[
+                            other_child
+                            for j, other_child in enumerate(self.children)
+                            if i != j
+                        ],
                     ]
                 )
             )
@@ -50,13 +58,15 @@ class Divide(Operation):
 
     def evaluate(self, **kwargs) -> float:
         return self.children[0].evaluate(**kwargs) / self.children[1].evaluate(**kwargs)
-    
+
     def derivative(self, variable_name: str):
         u = self.children[0]
         v = self.children[1]
-        numerator = Sum([
-            Multiply([u.derivative(variable_name), v]),
-            Multiply([v.derivative(variable_name), u, Constant(value=-1)])
-        ])
+        numerator = Sum(
+            [
+                Multiply([u.derivative(variable_name), v]),
+                Multiply([v.derivative(variable_name), u, Constant(value=-1)]),
+            ]
+        )
         denominator = Multiply([v, v])
         return Divide([numerator, denominator])

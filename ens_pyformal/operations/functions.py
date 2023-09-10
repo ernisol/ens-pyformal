@@ -4,7 +4,7 @@ from typing import List
 
 import numpy as np
 
-from ens_pyformal.operations.generic import InvalidDefinitionError, Operation, Constant
+from ens_pyformal.operations.generic import Constant, InvalidDefinitionError, Operation
 from ens_pyformal.operations.operators import Multiply
 
 
@@ -20,7 +20,9 @@ class Sin(Operation):
         return np.sin(self.children[0].evaluate(**kwargs))
 
     def derivative(self, variable_name: str):
-        return Multiply([self.children[0].derivative(variable_name), Cos(children=self.children)])
+        return Multiply(
+            [self.children[0].derivative(variable_name), Cos(children=self.children)]
+        )
 
 
 class Cos(Operation):
@@ -33,6 +35,12 @@ class Cos(Operation):
 
     def evaluate(self, **kwargs) -> float:
         return np.cos(self.children[0].evaluate(**kwargs))
-    
+
     def derivative(self, variable_name: str):
-        return Multiply([Constant(value=-1), self.children[0].derivative(variable_name), Sin(children=self.children)])
+        return Multiply(
+            [
+                Constant(value=-1),
+                self.children[0].derivative(variable_name),
+                Sin(children=self.children),
+            ]
+        )

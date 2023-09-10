@@ -1,9 +1,10 @@
 """Module for parsing formulas."""
 
 import ast
-from ens_pyformal.operations.operators import Sum, Multiply, Divide
-from ens_pyformal.operations.generic import Constant, Variable, Operation
+
 from ens_pyformal import constants as cst
+from ens_pyformal.operations.generic import Constant, Operation, Variable
+from ens_pyformal.operations.operators import Divide, Multiply, Sum
 
 
 def parse(equation: str) -> Operation:
@@ -30,7 +31,7 @@ def recursive_parser(ast_object: ast.AST) -> Operation:
         elif isinstance(operation_kind, ast.Div):
             return Divide(children=[left_member, right_member])
         else:
-            raise UnrecognizedOperationException(
+            raise UnrecognizedOperationError(
                 f"{operation_kind} is not handled by the parser."
             )
     elif isinstance(ast_object, ast.Name):
@@ -43,14 +44,12 @@ def recursive_parser(ast_object: ast.AST) -> Operation:
 
 def parse_function(ast_object: ast.Call) -> Operation:
     function_name = ast_object.func.id.lower()
-    if not function_name in cst.IMPLEMENTED_FUNCTIONS:
-        raise UnrecognizedOperationException(
-            f"Function not implemented: {function_name}"
-        )
+    if function_name not in cst.IMPLEMENTED_FUNCTIONS:
+        raise UnrecognizedOperationError(f"Function not implemented: {function_name}")
     children = [recursive_parser(ast_object=child) for child in ast_object.args]
     return cst.IMPLEMENTED_FUNCTIONS[function_name](children=children)
 
 
-class UnrecognizedOperationException(Exception):
+class UnrecognizedOperationError(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
